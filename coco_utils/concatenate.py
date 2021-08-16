@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 import os
-from typing import Callable
+from typing import Callable, Union
 from pathlib import Path
 from argparse import ArgumentParser
 import cv2
@@ -31,7 +31,7 @@ def seed_ext(img_path: Path) -> str:
     return seed
 
 
-def concatenate(root_path: Path, seed_extractor: Callable[[Path], str], idx_extractor: Callable[[Path], int], remove_old: bool = True) -> None:
+def concatenate(root_path: Path, seed_extractor: Callable[[Path], str], idx_extractor: Callable[[Path], int], remove_old: bool = True, num_idx: Union[None, int] = None) -> None:
     """Concatanate images along the channel axis. All images should be inside the same directory
 
     Args:
@@ -39,8 +39,11 @@ def concatenate(root_path: Path, seed_extractor: Callable[[Path], str], idx_extr
         seed_extractor (Callable[[Path], str]): seed string extracting function using the path. images with the same seed will be concatanated.
         idx_extractor (Callable[[Path], int]): index extracting function using the path. images are concatanated in this index order. 
         remove_old (bool, optional): if this is True, remove all used images. image name with the index 0 will be the result of concatanate. Defaults to True.
+        num_idx (Union[None,int], optional): if this is given, only given number of images with the same seeds are processed. less number of image sequence are ignored. Defaults to None.
+
     """
-    im_iter = ImageSequenceIter(root_path, seed_extractor, idx_extractor)
+    im_iter = ImageSequenceIter(
+        root_path, seed_extractor, idx_extractor, num_idx)
     for imgs in im_iter:
         img_path = [root_path.parent.joinpath(
             Path(imgs[i])) for i in range(len(imgs))]

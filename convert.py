@@ -51,7 +51,8 @@ if __name__ == '__main__':
     annot = cu.refine(annot, annot_path)
     cu.select_channel(annot, annot_path, "bgr")
     cu.type_cast(annot, annot_path, "uint16")
-    cu.concatenate(annot_path.parent, seed_ext, idx_ext, remove_old=True)
+    cu.concatenate(annot_path.parent, seed_ext,
+                   idx_ext, remove_old=True, num_idx=2)
     annot = cu.rename(annot, annot_path, name_gen)
 
     # show result
