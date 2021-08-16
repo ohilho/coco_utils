@@ -2,7 +2,7 @@
 from os import PathLike
 from pathlib import Path
 import numpy as np
-from typing import Callable, Dict
+from typing import Callable, Dict, Union
 import json
 
 
@@ -104,7 +104,14 @@ def make_dim_3(arr: np.ndarray) -> np.ndarray:
 
 
 class ImageSequenceIter:
-    def __init__(self, path: PathLike, seed_extractor: Callable[[Path], str], index_extractor: Callable[[Path], int]) -> None:
+    """Image sequence iterator. This iterator iterates the files inside the given path.
+    This iterator need two callables: seed_extractor and index_extractor.
+    seed_extractor extracts the seed string from the path. index_extractor extracts the index from the path. 
+    Files with the same seed is considered as one sequence. index is the sequence number of the image in the sequence. 
+    if num_idx is given, you will iterate over the sequences which has the length of 'num_idx'.
+    """
+
+    def __init__(self, path: PathLike, seed_extractor: Callable[[Path], str], index_extractor: Callable[[Path], int], num_idx: Union[None, int] = None) -> None:
         self.path = Path(path)
         correlated = {}
         for p in self.path.iterdir():
@@ -123,10 +130,14 @@ class ImageSequenceIter:
             # put the value
             correlated[seed][idx] = p
 
-        self.pair_list = list(correlated.values())
+        self.seq_list = list(correlated.values())
+
+        if num_idx != None:
+            self.seq_list = [p for p in self.seq_list if len(
+                self.seq_list) == num_idx]
 
     def __iter__(self):
-        return iter(self.pair_list)
+        return iter(self.seq_list)
 
 
 def is_image(path: Path) -> bool:
