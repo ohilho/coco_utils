@@ -5,6 +5,8 @@ from copy import deepcopy
 
 
 def _offset(ids: List) -> int:
+    if len(ids) == 0:
+        return 0
     zero_base_offset = 1 if 0 in ids else 0
     return max(ids) + zero_base_offset
 
@@ -15,14 +17,17 @@ def merge(annot0: Dict, annot1: Dict, info: Dict) -> Dict:
     ann1 = deepcopy(annot1)
     # these keys will merged with id offset
     dset_keys = ['license', 'images', 'annotations', 'categories']
-    # calculate offsets
-    offsets = {k: _offset([ann['id'] for ann in ann0[k]]) for k in dset_keys}
+
+    # calculate offsets for the keys in the annot0
+    offsets = {k: _offset([ann['id'] for ann in ann0[k]
+                          if k in ann0.keys()]) for k in dset_keys}
 
     # merge
     for key in dset_keys:
-        for ann in ann1[key]:
-            ann['id'] += offsets[key]
-            ann0[key].append(ann)
+        if key in ann1.keys():
+            for ann in ann1[key]:
+                ann['id'] += offsets[key]
+                ann0[key].append(ann)
 
     ann0['info'] = info
     return ann0
